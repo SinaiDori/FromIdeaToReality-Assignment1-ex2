@@ -198,7 +198,7 @@
             platforms.push({
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
-                width: 100,
+                width: Math.floor(Math.random() * 51) + 100, // Random width between 100 and 150
                 height: 10,
                 number: counter++ // Assign platform number
             });
@@ -313,7 +313,20 @@
             platforms.forEach(platform => {
                 ctx.fillStyle = 'black';
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                if (platform.number % 10 === 0) {
+                    ctx.fillStyle = 'white';
+                    const rectWidth = 40;
+                    const rectX = platform.x + (platform.width - rectWidth) / 2; // Position the rectangle at the center of the platform
+                    ctx.fillRect(rectX, platform.y + platform.height, rectWidth, 15); // Draw rectangle touching the platform
+
+                    ctx.fillStyle = 'green';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center'; // Set text alignment to center
+                    ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
+                }
             });
+
+            ctx.textAlign = 'start'; // Reset text alignment to start
 
             requestAnimationFrame(updateGame);
         }

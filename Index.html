@@ -444,10 +444,24 @@
 
                 // Screen scroll
                 if (player.y < canvas.height / 4) {
-                    player.y += Math.abs(player.velY);
+                    // player.y += Math.abs(player.velY);
+                    // platforms.forEach(platform => {
+                    //     platform.y += Math.abs(player.velY);
+                    //     let highestPlatformY = getHighestPlatformY();
+                    const scrollDistance = Math.abs(player.velY);
+                    player.y += scrollDistance;
                     platforms.forEach(platform => {
-                        platform.y += Math.abs(player.velY);
+                        platform.y += scrollDistance; // Adjust platform y coordinate
                         let highestPlatformY = getHighestPlatformY();
+                        // Check if the platform has an enemy
+                        if (platform.enemy) {
+                            // Adjust enemy y coordinate
+                            enemies.forEach(enemy => {
+                                if (enemy.platform === platform) {
+                                    enemy.y += scrollDistance;
+                                }
+                            });
+                        }
                         if (platform.y > canvas.height) {
                             platform.y = highestPlatformY - 100;
                             highestPlatformY = platform.y;
@@ -466,9 +480,9 @@
                             }
                         }
                     });
-                    enemies.forEach(enemy => {
-                        enemy.y += Math.abs(player.velY);
-                    });
+                    // enemies.forEach(enemy => {
+                    //     enemy.y += Math.abs(player.velY);
+                    // });
                 }
 
                 // Collision with the canvas edges
@@ -555,6 +569,7 @@
                         player.y + player.height > enemy.y
                     ) {
                         gameOver = true;
+                        insertScore(score);
                     }
                 });
             }

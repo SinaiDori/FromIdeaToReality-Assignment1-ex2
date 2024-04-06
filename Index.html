@@ -200,7 +200,9 @@
                 y: canvas.height - (100 * i) - 50,
                 width: Math.floor(Math.random() * 51) + 100, // Random width between 100 and 150
                 height: 10,
-                number: counter++ // Assign platform number
+                number: counter++, // Assign platform number
+                timeOnPlatform: 0, // Initialize time on platform
+                continueFall: false // Initialize continueFall property
             });
         }
 
@@ -226,11 +228,6 @@
         // Game state
         let gameOver = false;
 
-        // // Leaderboard
-        // const maxLeaderboardEntries = 10;
-        // let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-
-        // let leaderboard = Array(10).fill(0); // Initialize with 10 scores all set to 0
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || Array(10).fill(0); // Initialize with scores from localStorage or with 10 scores all set to 0
 
         // Helper functions
@@ -252,9 +249,7 @@
             const y = canvas.height / 2 - 50; // Adjust Y position
             ctx.fillText('Leaderboard', canvas.width / 2, y - 80);
 
-            // leaderboard.sort((a, b) => b - a).slice(0, maxLeaderboardEntries).forEach((score, index) => {
-            //     ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, y - 50 + index * 30);
-            // });
+
             leaderboard.forEach((score, index) => {
                 ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, y - 50 + index * 30);
             });
@@ -290,12 +285,7 @@
             );
         }
 
-        // function saveScore() {
-        //     leaderboard.push(score);
-        //     leaderboard.sort((a, b) => b - a);
-        //     leaderboard = leaderboard.slice(0, maxLeaderboardEntries);
-        //     localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        // }
+
         function insertScore(score) {
             for (let i = 0; i < leaderboard.length; i++) {
                 if (score > leaderboard[i]) {
@@ -340,11 +330,6 @@
 
         function updateGame() {
             // Check for game over condition
-
-            // if (player.y >= canvas.height - player.height && score >= 1) {
-            //     gameOver = true;
-            //     insertScore(score);
-            // }
             if (player.y >= canvas.height - player.height && score >= 1 && !gameOver) {
                 gameOver = true;
                 insertScore(score);
@@ -390,6 +375,8 @@
                             highestPlatformY = platform.y;
                             platform.x = Math.random() * (canvas.width - platform.width);
                             platform.number = counter++; // Assign platform number
+                            platform.timeOnPlatform = 0; // Initialize time on platform
+                            platform.continueFall = false; // Initialize continueFall property
                         }
                     });
                 }
@@ -424,6 +411,27 @@
                         if (platform.number > score) {
                             score = platform.number;
                         }
+
+                        // Increment time on platform
+                        platform.timeOnPlatform += 1 / 60; // Assuming the game runs at 60 frames per second
+
+                        // If time exceeds 3 seconds, make platform fall
+                        if (platform.timeOnPlatform > 3) {
+                            // platform.velY = gravity; // Add velocity to make it fall
+                            // platform.y += platform.velY; // Move platform based on velocity
+                            platform.y += gravity * 10; // Move platform based on gravity
+                            platform.continueFall = true; // Set continueFall property to true
+                        }
+                    } else {
+                        // Reset time on platform if player is not on it
+                        platform.timeOnPlatform = 0;
+                    }
+                });
+
+                // Update platform positions
+                platforms.forEach(platform => {
+                    if (platform.continueFall) {
+                        platform.y += gravity * 10; // Move platform based on gravity
                     }
                 });
             }

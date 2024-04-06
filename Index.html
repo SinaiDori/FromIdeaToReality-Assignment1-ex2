@@ -202,8 +202,60 @@
                 height: 10,
                 number: counter++, // Assign platform number
                 timeOnPlatform: 0, // Initialize time on platform
-                continueFall: false // Initialize continueFall property
+                continueFall: false, // Initialize continueFall property
+                // enemy: Math.random() < 0.05 // 5% chance of having an enemy 
+                enemy: Math.random() < 0.5 // 50% chance of having an enemy for testing
             });
+        }
+
+        // Enemies
+        let enemies = [];
+
+        class Type1Enemy {
+            constructor(x, y, width, height, platform) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = 'yellow';
+                this.platform = platform;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        }
+
+        class Type2Enemy {
+            constructor(x, y, width, height, platform) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = 'yellow';
+                this.platform = platform;
+                this.direction = 1; // 1 for right, -1 for left
+                this.speed = 2;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                // Move the enemy from side to side on the platform
+                this.x += this.direction * this.speed;
+                this.x -= this.direction * this.speed / 2;
+
+                // Change direction if the enemy reaches the platform's edges
+                if (this.x <= this.platform.x) {
+                    this.direction = 1;
+                } else if (this.x + this.width >= this.platform.x + this.platform.width) {
+                    this.direction = -1;
+                }
+            }
         }
 
         // Score
@@ -307,15 +359,30 @@
             score = 0;
             platforms = [];
             counter = 1;
+            enemies = [];
             for (let i = 0; i < 10; i++) {
                 platforms.push({
                     x: Math.random() * (canvas.width - 50),
                     y: canvas.height - (100 * i) - 50,
                     width: Math.floor(Math.random() * 51) + 100,
                     height: 10,
-                    number: counter++
+                    number: counter++,
+                    timeOnPlatform: 0, // Initialize time on platform
+                    continueFall: false, // Initialize continueFall property
+                    // enemy: Math.random() < 0.05 // 5% chance of having an enemy
+                    enemy: Math.random() < 0.5 // 50% chance of having an enemy for testing
                 });
             }
+            // Create enemies
+            platforms.forEach(platform => {
+                if (platform.enemy) {
+                    const enemyType = Math.random() < 0.5 ? Type1Enemy : Type2Enemy;
+                    const enemyX = platform.x + (platform.width - player.width) / 2;
+                    const enemyY = platform.y - player.height;
+                    const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
+                    enemies.push(enemy);
+                }
+            });
         }
 
         function handleMouseClick(event) {
@@ -327,6 +394,17 @@
                 resetGame();
             }
         }
+
+        // Create enemies
+        platforms.forEach(platform => {
+            if (platform.enemy) {
+                const enemyType = Math.random() < 0.5 ? Type1Enemy : Type2Enemy;
+                const enemyX = platform.x + (platform.width - player.width) / 2;
+                const enemyY = platform.y - player.height;
+                const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
+                enemies.push(enemy);
+            }
+        });
 
         function updateGame() {
             // Check for game over condition
@@ -377,7 +455,19 @@
                             platform.number = counter++; // Assign platform number
                             platform.timeOnPlatform = 0; // Initialize time on platform
                             platform.continueFall = false; // Initialize continueFall property
+                            // platform.enemy = Math.random() < 0.05; // 5% chance of having an enemy
+                            platform.enemy = Math.random() < 0.5; // 50% chance of having an enemy for testing
+                            if (platform.enemy) {
+                                const enemyType = Math.random() < 0.5 ? Type1Enemy : Type2Enemy;
+                                const enemyX = platform.x + (platform.width - player.width) / 2;
+                                const enemyY = platform.y - player.height;
+                                const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
+                                enemies.push(enemy);
+                            }
                         }
+                    });
+                    enemies.forEach(enemy => {
+                        enemy.y += Math.abs(player.velY);
                     });
                 }
 
@@ -419,7 +509,7 @@
                         if (platform.timeOnPlatform > 3) {
                             // platform.velY = gravity; // Add velocity to make it fall
                             // platform.y += platform.velY; // Move platform based on velocity
-                            platform.y += gravity * 10; // Move platform based on gravity
+                            // platform.y += gravity * 10; // Move platform based on gravity
                             platform.continueFall = true; // Set continueFall property to true
                         }
                     } else {
@@ -432,6 +522,39 @@
                 platforms.forEach(platform => {
                     if (platform.continueFall) {
                         platform.y += gravity * 10; // Move platform based on gravity
+                    }
+                });
+
+                // // Create enemies
+                // platforms.forEach(platform => {
+                //     if (platform.enemy) {
+                //         const enemyType = Math.random() < 0.5 ? Type1Enemy : Type2Enemy;
+                //         const enemyX = platform.x + (platform.width - player.width) / 2;
+                //         const enemyY = platform.y - player.height;
+                //         const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
+                //         enemies.push(enemy);
+                //     }
+                // });
+
+                // Draw and update enemies
+                enemies.forEach(enemy => {
+                    // enemy.draw();
+                    if (enemy instanceof Type2Enemy) {
+                        enemy.update();
+                    }
+
+                    if (enemy.platform.continueFall) {
+                        enemy.y += gravity * 10; // Move enemy based on gravity
+                    }
+
+                    // Check for collision with the player
+                    if (
+                        player.x < enemy.x + enemy.width &&
+                        player.x + player.width > enemy.x &&
+                        player.y < enemy.y + enemy.height &&
+                        player.y + player.height > enemy.y
+                    ) {
+                        gameOver = true;
                     }
                 });
             }
@@ -463,6 +586,12 @@
                     ctx.textAlign = 'center'; // Set text alignment to center
                     ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
                 }
+            });
+            enemies.forEach(enemy => {
+                enemy.draw();
+                // if (enemy instanceof Type2Enemy) {
+                //     enemy.update();
+                // }
             });
             if (gameOver) {
                 displayGameOver();

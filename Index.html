@@ -179,12 +179,26 @@
         const friction = 0.8;
         const baseJump = -10; // Base jump velocity
 
+        // Player's image
+        const playerImg = new Image();
+        playerImg.src = './playerImage.png';
+
+        // Enemy's images
+        const enemy1Img = new Image();
+        enemy1Img.src = './enemy1Image.png';
+        const enemy2Img = new Image();
+        enemy2Img.src = './enemy2Image.png';
+
+        // Star's image
+        const starImg = new Image();
+        starImg.src = './starImage.png';
+
         // Player
         let player = {
             x: canvas.width / 2,
             y: canvas.height - 150,
-            width: 20,
-            height: 20,
+            width: playerImg.width,
+            height: playerImg.height,
             speed: 5,
             velX: 0,
             velY: 0,
@@ -224,11 +238,11 @@
                 this.height = height;
                 this.color = 'yellow';
                 this.platform = platform;
+                this.image = enemy1Img;
             }
 
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
         }
 
@@ -242,11 +256,11 @@
                 this.platform = platform;
                 this.direction = 1; // 1 for right, -1 for left
                 this.speed = 2;
+                this.image = enemy2Img;
             }
 
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
 
             update() {
@@ -275,11 +289,11 @@
                 this.active = false; // Set the star as not active
                 this.duration = 480; // Duration in seconds
                 this.collected = false; // Set the star as not collected
+                this.image = starImg;
             }
 
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
         }
 
@@ -628,48 +642,100 @@
                 }
 
                 // Platform collision
-                platforms.forEach(platform => {
-                    if (
-                        player.x < platform.x + platform.width &&
-                        player.x + player.width > platform.x &&
-                        player.y + player.height > platform.y &&
-                        player.y + player.height < platform.y + platform.height &&
-                        player.velY >= 0
-                    ) {
-                        if (platform.isMoving && platform.direction === 1) {
-                            player.jumping = false;
-                            player.velY = 0;
-                            player.y = platform.y - player.height + gravity * 1.5;
-                        } else if (platform.isMoving && platform.direction === -1) {
-                            player.jumping = false;
-                            player.velY = 0;
-                            player.y = platform.y - player.height - gravity * 1.5;
+                let onPlatform = false;
+                for (let j = 0; j < Math.ceil(Math.abs(player.velY)); j++) {
+                    let playerNextY = player.y + (player.velY / Math.abs(player.velY)) * j;
+                    let playerNextBottom = playerNextY + player.height;
+
+                    platforms.forEach(platform => {
+                        if (
+                            player.x < platform.x + platform.width &&
+                            player.x + player.width > platform.x &&
+                            playerNextBottom > platform.y &&
+                            playerNextBottom <= platform.y + platform.height &&
+                            player.velY >= 0
+                        ) {
+                            if (platform.isMoving && platform.direction === 1) {
+                                player.jumping = false;
+                                player.velY = 0;
+                                player.y = platform.y - player.height + gravity * 1.5;
+                            } else if (platform.isMoving && platform.direction === -1) {
+                                player.jumping = false;
+                                player.velY = 0;
+                                player.y = platform.y - player.height - gravity * 1.5;
+                            } else {
+                                player.jumping = false;
+                                player.velY = 0;
+                                player.y = platform.y - player.height;
+                            }
+
+                            // Update score
+                            if (platform.number > score) {
+                                score = platform.number;
+                            }
+
+                            // Increment time on platform
+                            platform.timeOnPlatform += 1 / 60; // Assuming the game runs at 60 frames per second
+
+                            // If time exceeds 3 seconds, make platform fall
+                            if (platform.timeOnPlatform > 3) {
+                                // platform.velY = gravity; // Add velocity to make it fall
+                                // platform.y += platform.velY; // Move platform based on velocity
+                                // platform.y += gravity * 10; // Move platform based on gravity
+                                platform.continueFall = true; // Set continueFall property to true
+                            }
                         } else {
-                            player.jumping = false;
-                            player.velY = 0;
-                            player.y = platform.y - player.height;
+                            // Reset time on platform if player is not on it
+                            platform.timeOnPlatform = 0;
                         }
+                    });
 
-                        // Update score
-                        if (platform.number > score) {
-                            score = platform.number;
-                        }
+                    if (onPlatform) break;
+                }
 
-                        // Increment time on platform
-                        platform.timeOnPlatform += 1 / 60; // Assuming the game runs at 60 frames per second
+                // platforms.forEach(platform => {
+                //     if (
+                //         player.x < platform.x + platform.width &&
+                //         player.x + player.width > platform.x &&
+                //         player.y + player.height > platform.y &&
+                //         player.y + player.height < platform.y + platform.height &&
+                //         player.velY >= 0
+                //     ) {
+                //         if (platform.isMoving && platform.direction === 1) {
+                //             player.jumping = false;
+                //             player.velY = 0;
+                //             player.y = platform.y - player.height + gravity * 1.5;
+                //         } else if (platform.isMoving && platform.direction === -1) {
+                //             player.jumping = false;
+                //             player.velY = 0;
+                //             player.y = platform.y - player.height - gravity * 1.5;
+                //         } else {
+                //             player.jumping = false;
+                //             player.velY = 0;
+                //             player.y = platform.y - player.height;
+                //         }
 
-                        // If time exceeds 3 seconds, make platform fall
-                        if (platform.timeOnPlatform > 3) {
-                            // platform.velY = gravity; // Add velocity to make it fall
-                            // platform.y += platform.velY; // Move platform based on velocity
-                            // platform.y += gravity * 10; // Move platform based on gravity
-                            platform.continueFall = true; // Set continueFall property to true
-                        }
-                    } else {
-                        // Reset time on platform if player is not on it
-                        platform.timeOnPlatform = 0;
-                    }
-                });
+                //         // Update score
+                //         if (platform.number > score) {
+                //             score = platform.number;
+                //         }
+
+                //         // Increment time on platform
+                //         platform.timeOnPlatform += 1 / 60; // Assuming the game runs at 60 frames per second
+
+                //         // If time exceeds 3 seconds, make platform fall
+                //         if (platform.timeOnPlatform > 3) {
+                //             // platform.velY = gravity; // Add velocity to make it fall
+                //             // platform.y += platform.velY; // Move platform based on velocity
+                //             // platform.y += gravity * 10; // Move platform based on gravity
+                //             platform.continueFall = true; // Set continueFall property to true
+                //         }
+                //     } else {
+                //         // Reset time on platform if player is not on it
+                //         platform.timeOnPlatform = 0;
+                //     }
+                // });
+
 
                 // Move platforms
                 platforms.forEach(platform => {
@@ -750,8 +816,9 @@
             ctx.fillText(`Score: ${score}`, 10, 20);
 
             // Draw player
-            ctx.fillStyle = 'red';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // ctx.fillStyle = 'red';
+            // ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
             // Draw platforms
             platforms.forEach(platform => {

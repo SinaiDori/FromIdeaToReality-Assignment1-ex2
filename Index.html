@@ -636,9 +636,19 @@
                         player.y + player.height < platform.y + platform.height &&
                         player.velY >= 0
                     ) {
-                        player.jumping = false;
-                        player.velY = 0;
-                        player.y = platform.y - player.height;
+                        if (platform.isMoving && platform.direction === 1) {
+                            player.jumping = false;
+                            player.velY = 0;
+                            player.y = platform.y - player.height + gravity * 1.5;
+                        } else if (platform.isMoving && platform.direction === -1) {
+                            player.jumping = false;
+                            player.velY = 0;
+                            player.y = platform.y - player.height - gravity * 1.5;
+                        } else {
+                            player.jumping = false;
+                            player.velY = 0;
+                            player.y = platform.y - player.height;
+                        }
 
                         // Update score
                         if (platform.number > score) {
@@ -669,7 +679,7 @@
                 // Update platform positions
                 platforms.forEach(platform => {
                     if (platform.continueFall) {
-                        platform.y += gravity * 10; // Move platform based on gravity
+                        platform.y += gravity * 20; // Move platform based on gravity
                     }
                 });
 
@@ -692,7 +702,7 @@
                     }
 
                     if (enemy.platform.continueFall) {
-                        enemy.y += gravity * 10; // Move enemy based on gravity
+                        enemy.y += gravity * 20; // Move enemy based on gravity
                     }
 
                     // Check for collision with the player
@@ -711,7 +721,7 @@
                 // Check for star collision
                 stars.forEach(star => {
                     if (star.platform.continueFall) {
-                        star.y += gravity * 10; // Move star based on gravity
+                        star.y += gravity * 20; // Move star based on gravity
                     }
                     if (
                         player.x < star.x + star.width &&

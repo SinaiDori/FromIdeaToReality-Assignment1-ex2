@@ -208,6 +208,8 @@
                 // isMoving: Math.random() < 0.06 // 6% chance of the platform moving up and down
                 isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
                 originalY: canvas.height - (100 * i) - 50,// Initialize originalY property
+                // star: Math.random() < 0.1 // 10% chance of having a star
+                star: Math.random() < 0.5 // 50% chance of having a star for testing
             });
         }
 
@@ -258,6 +260,26 @@
                 } else if (this.x + this.width >= this.platform.x + this.platform.width) {
                     this.direction = -1;
                 }
+            }
+        }
+
+        let stars = [];
+        class Star {
+            constructor(x, y, width, height, platform) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = 'green';
+                this.platform = platform; // Associate the star with a platform
+                this.active = false; // Set the star as not active
+                this.duration = 480; // Duration in seconds
+                this.collected = false; // Set the star as not collected
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
 
@@ -363,6 +385,7 @@
             platforms = [];
             counter = 1;
             enemies = [];
+            stars = [];
             for (let i = 0; i < 10; i++) {
                 platforms.push({
                     x: Math.random() * (canvas.width - 50),
@@ -377,6 +400,8 @@
                     originalY: canvas.height - (100 * i) - 50, // Initialize originalY property
                     // isMoving: Math.random() < 0.06 // 6% chance of the platform moving up and down
                     isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
+                    // star: Math.random() < 0.1 // 10% chance of having a star
+                    star: Math.random() < 0.5 // 50% chance of having a star for testing
                 });
             }
             // Create enemies
@@ -387,6 +412,15 @@
                     const enemyY = platform.y - player.height;
                     const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
                     enemies.push(enemy);
+                }
+            });
+            // Create stars at random x positions on the platform
+            platforms.forEach(platform => {
+                if (platform.star) {
+                    const starX = platform.x + Math.random() * (platform.width - player.width); // Random x position on the platform
+                    const starY = platform.y - player.height; // Position the star above the platform
+                    const star = new Star(starX, starY, player.width, player.height, platform) // Create a new star
+                    stars.push(star); // Add the star to the stars array
                 }
             });
         }
@@ -421,6 +455,13 @@
                     }
                 });
 
+                // Update the star's position if there is one
+                stars.forEach(star => {
+                    if (star.platform === platform) {
+                        star.y += platform.direction * speed;
+                    }
+                });
+
                 // Change direction if the platform reaches the maximum offset
                 if (platform.direction === 1 && platform.y >= platform.originalY + maxOffset) {
                     platform.direction = -1; // Change direction to up
@@ -442,6 +483,17 @@
                 enemies.push(enemy);
             }
         });
+
+        // Create stars at random x positions on the platform
+        platforms.forEach(platform => {
+            if (platform.star) {
+                const starX = platform.x + Math.random() * (platform.width - player.width); // Random x position on the platform
+                const starY = platform.y - player.height; // Position the star above the platform
+                const star = new Star(starX, starY, player.width, player.height, platform) // Create a new star
+                stars.push(star); // Add the star to the stars array
+            }
+        });
+
 
         function updateGame() {
             // Check for game over condition
@@ -500,6 +552,15 @@
                                 }
                             });
                         }
+                        // Check if the platform has a star
+                        if (platform.star) {
+                            // Adjust star y coordinate
+                            stars.forEach(star => {
+                                if (star.platform === platform) {
+                                    star.y += scrollDistance;
+                                }
+                            });
+                        }
                         if (platform.y > canvas.height) {
                             platform.y = highestPlatformY - 100;
                             platform.originalY = platform.y;
@@ -512,6 +573,8 @@
                             platform.enemy = Math.random() < 0.5; // 50% chance of having an enemy for testing
                             // platform.isMoving = Math.random() < 0.06; // 6% chance of the platform moving up and down
                             // platform.isMoving = Math.random() < 0.6; // 60% chance of the platform moving up and down for testing
+                            //platform.star = Math.random() < 0.1; // 10% chance of having a star
+                            platform.star = Math.random() < 0.5; // 50% chance of having a star for testing
 
                             // Reset direction and originalY for regenerated platforms
                             platform.direction = platform.isMoving ? 1 : undefined;
@@ -523,12 +586,24 @@
                                 const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
                                 enemies.push(enemy);
                             }
+                            if (platform.star) {
+                                const starX = platform.x + Math.random() * (platform.width - player.width); // Random x position on the platform
+                                const starY = platform.y - player.height; // Position the star above the platform
+                                const star = new Star(starX, starY, player.width, player.height, platform) // Create a new star
+                                stars.push(star); // Add the star to the stars array
+                            }
                         }
                     });
                     enemies.forEach((enemy, index) => {
                         if (enemy.y + player.height > canvas.height) {
                             enemies.splice(index, 1); // Remove the enemy at the current index
                             return; // Exit the loop after removing the enemy
+                        }
+                    });
+                    stars.forEach((star, index) => {
+                        if (star.y + player.height > canvas.height) {
+                            stars.splice(index, 1); // Remove the star at the current index
+                            return; // Exit the loop after removing the star
                         }
                     });
                     // enemies = enemies.filter(enemy => {
@@ -625,10 +700,33 @@
                         player.x < enemy.x + enemy.width &&
                         player.x + player.width > enemy.x &&
                         player.y < enemy.y + enemy.height &&
-                        player.y + player.height > enemy.y
+                        player.y + player.height > enemy.y &&
+                        stars.every(star => !star.active) // Check if no star is active
                     ) {
                         gameOver = true;
                         insertScore(score);
+                    }
+                });
+
+                // Check for star collision
+                stars.forEach(star => {
+                    if (star.platform.continueFall) {
+                        star.y += gravity * 10; // Move star based on gravity
+                    }
+                    if (
+                        player.x < star.x + star.width &&
+                        player.x + player.width > star.x &&
+                        player.y < star.y + star.height &&
+                        player.y + player.height > star.y
+                    ) {
+                        star.active = true; // Set the star as active
+                        star.collected = true; // Set the star as collected
+                    }
+                    if (star.active) {
+                        star.duration--; // Decrease the duration
+                        if (star.duration <= 0) {
+                            star.active = false; // Set the star as not active
+                        }
                     }
                 });
             }
@@ -666,6 +764,12 @@
                 // if (enemy instanceof Type2Enemy) {
                 //     enemy.update();
                 // }
+            });
+            // Draw stars
+            stars.forEach(star => {
+                if (!star.active && !star.collected) {
+                    star.draw();
+                }
             });
             if (gameOver) {
                 displayGameOver();

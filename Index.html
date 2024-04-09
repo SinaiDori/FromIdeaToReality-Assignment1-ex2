@@ -1,152 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer Game with Screen Scroll</title>
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        #gameCanvas {
-            background-color: #87CEEB;
-        }
-    </style>
-</head>
-
-<body>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Game settings
-        const gravity = 0.5;
-        const friction = 0.8;
-        const baseJump = -10; // Base jump velocity
-
-        // Player
-        let player = {
-            x: canvas.width / 2,
-            y: canvas.height - 150,
-            width: 20,
-            height: 20,
-            speed: 5,
-            velX: 0,
-            velY: 0,
-            jumping: false
-        };
-
-        // Platforms
-        let platforms = [];
-        for (let i = 0; i < 10; i++) {
-            platforms.push({
-                x: Math.random() * (canvas.width - 50),
-                y: canvas.height - (100 * i) - 50,
-                width: 100,
-                height: 10
-            });
-        }
-
-        // Key Listener
-        let keys = [];
-        window.addEventListener('keydown', function (e) {
-            keys[e.keyCode] = true;
-            if (e.keyCode == 32 && !player.jumping) { // Space key for jump
-                player.jumping = true;
-                player.velY = baseJump - Math.abs(player.velX); // Higher jump if running faster
-            }
-        });
-        window.addEventListener('keyup', function (e) {
-            keys[e.keyCode] = false;
-        });
-
-        function updateGame() {
-            // Check key inputs
-            if (keys[39]) { // right arrow
-                if (player.velX < player.speed) {
-                    player.velX++;
-                }
-            }
-            if (keys[37]) { // left arrow
-                if (player.velX > -player.speed) {
-                    player.velX--;
-                }
-            }
-
-            player.velX *= friction;
-            player.velY += gravity;
-
-            player.x += player.velX;
-            player.y += player.velY;
-
-            // Screen scroll
-            if (player.y < canvas.height / 4) {
-                player.y += Math.abs(player.velY);
-                platforms.forEach(platform => {
-                    platform.y += Math.abs(player.velY);
-                    if (platform.y > canvas.height) {
-                        platform.y = 0;
-                        platform.x = Math.random() * (canvas.width - platform.width);
-                    }
-                });
-            }
-
-            // Collision with the canvas edges
-            if (player.x >= canvas.width - player.width) {
-                player.x = canvas.width - player.width;
-            } else if (player.x <= 0) {
-                player.x = 0;
-            }
-
-            if (player.y >= canvas.height - player.height) {
-                player.y = canvas.height - player.height;
-                player.jumping = false;
-                player.velY = 0;
-            }
-
-            // Platform collision
-            platforms.forEach(platform => {
-                if (
-                    player.x < platform.x + platform.width &&
-                    player.x + player.width > platform.x &&
-                    player.y + player.height > platform.y &&
-                    player.y + player.height < platform.y + platform.height &&
-                    player.velY >= 0
-                ) {
-                    player.jumping = false;
-                    player.velY = 0;
-                    player.y = platform.y - player.height;
-                }
-            });
-
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw player
-            ctx.fillStyle = 'red';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-
-            // Draw platforms
-            platforms.forEach(platform => {
-                ctx.fillStyle = 'black';
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            });
-
-            requestAnimationFrame(updateGame);
-        }
-
-        updateGame();
-    </script>
-</body>
-
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -162,17 +13,46 @@
             overflow: hidden;
         }
 
-        #gameCanvas {
+        /* #gameCanvas {
             background-color: #87CEEB;
+        } */
+
+        #gameContainer {
+            width: 400px;
+            /* Match the canvas width */
+            height: 600px;
+            /* Match the canvas height */
+            background-image: url('backgroundImage.jpeg');
+            background-size: cover;
+            /* Adjust background size as needed */
+            background-repeat: no-repeat;
+            position: relative;
+            /* Required for positioning the canvas */
+        }
+
+        gameCanvas {
+            position: absolute;
+            /* Position the canvas absolutely within the container div */
+            left: 0;
+            top: 0;
         }
     </style>
 </head>
 
 <body>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <!-- <canvas id="gameCanvas" width="400" height="600"></canvas> -->
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Position the canvas absolutely within the container div
+        const container = document.getElementById('gameContainer');
+        canvas.style.position = 'absolute';
+        canvas.style.left = '0';
+        canvas.style.top = '0';
 
         // Game settings
         const gravity = 0.5;
@@ -193,10 +73,18 @@
         const starImg = new Image();
         starImg.src = './starImage.png';
 
+        // Platform's image
+        const platformImg = new Image();
+        platformImg.src = './platformImage.jpeg';
+
+        // Background image
+        const bgImg = new Image();
+        bgImg.src = './backgroundImageTest.jpeg';
+
         // Player
         let player = {
             x: canvas.width / 2,
-            y: canvas.height - 150,
+            y: canvas.height,
             width: playerImg.width,
             height: playerImg.height,
             speed: 5,
@@ -210,7 +98,7 @@
         let counter = 1; // Counter for platform numbers
         for (let i = 0; i < 10; i++) {
             platforms.push({
-                x: Math.random() * (canvas.width - 50),
+                x: Math.random() * (canvas.width - 150),
                 y: canvas.height - (100 * i) - 50,
                 width: Math.floor(Math.random() * 51) + 100, // Random width between 100 and 150
                 height: 10,
@@ -223,7 +111,8 @@
                 isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
                 originalY: canvas.height - (100 * i) - 50,// Initialize originalY property
                 // star: Math.random() < 0.1 // 10% chance of having a star
-                star: Math.random() < 0.5 // 50% chance of having a star for testing
+                star: Math.random() < 0.5, // 50% chance of having a star for testing
+                image: platformImg
             });
         }
 
@@ -323,26 +212,30 @@
 
         // Helper functions
         /* Change the displayGameOver function */
+        // function loadBackground() {
+        //     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+        // }
+
         function displayGameOver() {
-            ctx.fillStyle = 'grey'; // Set the fill style to grey
-            ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 190, 300, 400); // Adjust rectangle size
-            ctx.font = '36px Arial'; // Decrease font size
+            // ctx.fillStyle = 'grey'; // Set the fill style to grey
+            // ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 190, 300, 400); // Adjust rectangle size
+            ctx.font = '38px Sprint'; // Decrease font size
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 160);
+            ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 150);
         }
 
         /* Adjust the displayLeaderboard function */
         function displayLeaderboard() {
-            ctx.font = '24px Arial';
+            ctx.font = '28px Sprint';
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
-            const y = canvas.height / 2 - 50; // Adjust Y position
-            ctx.fillText('Leaderboard', canvas.width / 2, y - 80);
+            const y = canvas.height / 2 - 40; // Adjust Y position
+            ctx.fillText('Leaderboard', canvas.width / 2, y - 70);
 
 
             leaderboard.forEach((score, index) => {
-                ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, y - 50 + index * 30);
+                ctx.fillText(`${index + 1}.     ${score}`, canvas.width / 2, y - 40 + index * 30);
             });
         }
 
@@ -351,21 +244,21 @@
             // Draw play again button rectangle
             ctx.fillStyle = 'orange'; // Set button color to orange
             const buttonX = canvas.width / 2 - 75;
-            const buttonY = canvas.height / 2 + 180;
+            const buttonY = canvas.height / 2 + 230;
             const buttonWidth = 150;
             const buttonHeight = 25;
             ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight); // Draw button rectangle
-            ctx.font = '24px Arial';
+            ctx.font = '24px Sprint';
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
-            const Y = canvas.height / 2 + 200; // Adjust Y position
+            const Y = canvas.height / 2 + 250; // Adjust Y position
             ctx.fillText('Play Again', canvas.width / 2, Y);
         }
 
 
         function isInsidePlayAgainButton(x, y) {
             const buttonX = canvas.width / 2 - 75;
-            const buttonY = canvas.height / 2 + 185;
+            const buttonY = canvas.height / 2 + 230;
             const buttonWidth = 150;
             const buttonHeight = 25;
             return (
@@ -391,7 +284,7 @@
         function resetGame() {
             gameOver = false;
             player.x = canvas.width / 2;
-            player.y = canvas.height - 150;
+            player.y = canvas.height;
             player.velX = 0;
             player.velY = 0;
             player.jumping = false;
@@ -402,7 +295,7 @@
             stars = [];
             for (let i = 0; i < 10; i++) {
                 platforms.push({
-                    x: Math.random() * (canvas.width - 50),
+                    x: Math.random() * (canvas.width - 150),
                     y: canvas.height - (100 * i) - 50,
                     width: Math.floor(Math.random() * 51) + 100,
                     height: 10,
@@ -415,7 +308,8 @@
                     // isMoving: Math.random() < 0.06 // 6% chance of the platform moving up and down
                     isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
                     // star: Math.random() < 0.1 // 10% chance of having a star
-                    star: Math.random() < 0.5 // 50% chance of having a star for testing
+                    star: Math.random() < 0.5, // 50% chance of having a star for testing
+                    image: platformImg
                 });
             }
             // Create enemies
@@ -452,7 +346,7 @@
         function movePlatform(platform) {
             if (!platform.continueFall && platform.isMoving) {
                 const speed = 1; // Adjust this value to change the movement speed
-                const maxOffset = 50; // Maximum offset from the original position
+                const maxOffset = 30; // Maximum offset from the original position
 
                 // Initialize direction and originalY if not already set
                 if (!platform.hasOwnProperty('direction')) {
@@ -810,44 +704,84 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Draw background
+            // loadBackground();
+
             // Draw score
-            ctx.font = "16px Arial";
+            ctx.font = "16px Sprint";
             ctx.fillStyle = "black";
             ctx.fillText(`Score: ${score}`, 10, 20);
 
-            // Draw player
-            // ctx.fillStyle = 'red';
-            // ctx.fillRect(player.x, player.y, player.width, player.height);
-            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            // // Draw player
+            // // ctx.fillStyle = 'red';
+            // // ctx.fillRect(player.x, player.y, player.width, player.height);
+            // ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
-            // Draw platforms
-            platforms.forEach(platform => {
-                ctx.fillStyle = 'black';
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-                if (platform.number % 10 === 0) {
-                    ctx.fillStyle = 'white';
-                    const rectWidth = 40;
-                    const rectX = platform.x + (platform.width - rectWidth) / 2; // Position the rectangle at the center of the platform
-                    ctx.fillRect(rectX, platform.y + platform.height, rectWidth, 15); // Draw rectangle touching the platform
+            // // Draw platforms
+            // platforms.forEach(platform => {
+            //     // ctx.fillStyle = 'black';
+            //     // ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            //     ctx.drawImage(platform.image, platform.x, platform.y, platform.width, platform.height);
+            //     if (platform.number % 10 === 0) {
+            //         ctx.fillStyle = 'white';
+            //         const rectWidth = 40;
+            //         const rectX = platform.x + (platform.width - rectWidth) / 2; // Position the rectangle at the center of the platform
+            //         ctx.fillRect(rectX, platform.y + platform.height, rectWidth, 15); // Draw rectangle touching the platform
 
-                    ctx.fillStyle = 'green';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center'; // Set text alignment to center
-                    ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
-                }
-            });
-            enemies.forEach(enemy => {
-                enemy.draw();
-                // if (enemy instanceof Type2Enemy) {
-                //     enemy.update();
-                // }
-            });
-            // Draw stars
-            stars.forEach(star => {
-                if (!star.active && !star.collected) {
-                    star.draw();
-                }
-            });
+            //         ctx.fillStyle = 'green';
+            //         ctx.font = '12px Sprint';
+            //         ctx.textAlign = 'center'; // Set text alignment to center
+            //         ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
+            //     }
+            // });
+            // enemies.forEach(enemy => {
+            //     enemy.draw();
+            //     // if (enemy instanceof Type2Enemy) {
+            //     //     enemy.update();
+            //     // }
+            // });
+            // // Draw stars
+            // stars.forEach(star => {
+            //     if (!star.active && !star.collected) {
+            //         star.draw();
+            //     }
+            // });
+            if (!gameOver) {
+                // Draw player
+                // ctx.fillStyle = 'red';
+                // ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+
+                // Draw platforms
+                platforms.forEach(platform => {
+                    // ctx.fillStyle = 'black';
+                    // ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                    ctx.drawImage(platform.image, platform.x, platform.y, platform.width, platform.height);
+                    if (platform.number % 10 === 0) {
+                        ctx.fillStyle = 'white';
+                        const rectWidth = 40;
+                        const rectX = platform.x + (platform.width - rectWidth) / 2; // Position the rectangle at the center of the platform
+                        ctx.fillRect(rectX, platform.y + platform.height, rectWidth, 15); // Draw rectangle touching the platform
+
+                        ctx.fillStyle = 'green';
+                        ctx.font = '12px Sprint';
+                        ctx.textAlign = 'center'; // Set text alignment to center
+                        ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
+                    }
+                });
+                enemies.forEach(enemy => {
+                    enemy.draw();
+                    // if (enemy instanceof Type2Enemy) {
+                    //     enemy.update();
+                    // }
+                });
+                // Draw stars
+                stars.forEach(star => {
+                    if (!star.active && !star.collected) {
+                        star.draw();
+                    }
+                });
+            }
             if (gameOver) {
                 displayGameOver();
                 displayLeaderboard();
@@ -859,7 +793,23 @@
             requestAnimationFrame(updateGame);
         }
 
+        // loadBackground();
         updateGame();
+    </script>
+    <script type='text/javascript'>
+
+        (function () {
+            if (window.localStorage) {
+                if (!localStorage.getItem('firstLoad')) {
+                    localStorage['firstLoad'] = true;
+                    window.location.reload();
+                }
+
+                else
+                    localStorage.removeItem('firstLoad');
+            }
+        })();
+
     </script>
 </body>
 

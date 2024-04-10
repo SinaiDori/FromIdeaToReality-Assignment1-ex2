@@ -13,10 +13,6 @@
             overflow: hidden;
         }
 
-        /* #gameCanvas {
-            background-color: #87CEEB;
-        } */
-
         #gameContainer {
             width: 400px;
             /* Match the canvas width */
@@ -40,7 +36,6 @@
 </head>
 
 <body>
-    <!-- <canvas id="gameCanvas" width="400" height="600"></canvas> -->
     <div id="gameContainer">
         <canvas id="gameCanvas" width="400" height="600"></canvas>
     </div>
@@ -107,13 +102,10 @@
                 number: counter++, // Assign platform number
                 timeOnPlatform: 0, // Initialize time on platform
                 continueFall: false, // Initialize continueFall property
-                // enemy: Math.random() < 0.05 // 5% chance of having an enemy 
-                enemy: Math.random() < 0.5, // 50% chance of having an enemy for testing
-                // isMoving: Math.random() < 0.06 // 6% chance of the platform moving up and down
-                isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
+                enemy: Math.random() < 0.05, // 5% chance of having an enemy 
+                isMoving: Math.random() < 0.06, // 6% chance of the platform moving up and down
                 originalY: canvas.height - (100 * i) - 50,// Initialize originalY property
-                // star: Math.random() < 0.1 // 10% chance of having a star
-                star: Math.random() < 0.5, // 50% chance of having a star for testing
+                star: Math.random() < 0.05, // 5% chance of having a star
                 image: platformImg
             });
         }
@@ -213,14 +205,7 @@
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || Array(10).fill(0); // Initialize with scores from localStorage or with 10 scores all set to 0
 
         // Helper functions
-        /* Change the displayGameOver function */
-        // function loadBackground() {
-        //     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-        // }
-
         function displayGameOver() {
-            // ctx.fillStyle = 'grey'; // Set the fill style to grey
-            // ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 190, 300, 400); // Adjust rectangle size
             ctx.font = '38px Sprint'; // Decrease font size
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
@@ -304,13 +289,10 @@
                     number: counter++,
                     timeOnPlatform: 0, // Initialize time on platform
                     continueFall: false, // Initialize continueFall property
-                    // enemy: Math.random() < 0.05 // 5% chance of having an enemy
-                    enemy: Math.random() < 0.5, // 50% chance of having an enemy for testing
+                    enemy: Math.random() < 0.05, // 5% chance of having an enemy
                     originalY: canvas.height - (100 * i) - 50, // Initialize originalY property
-                    // isMoving: Math.random() < 0.06 // 6% chance of the platform moving up and down
-                    isMoving: Math.random() < 0.6, // 60% chance of the platform moving up and down for testing
-                    // star: Math.random() < 0.1 // 10% chance of having a star
-                    star: Math.random() < 0.5, // 50% chance of having a star for testing
+                    isMoving: Math.random() < 0.06, // 6% chance of the platform moving up and down
+                    star: Math.random() < 0.05, // 5% chance of having a star
                     image: platformImg
                 });
             }
@@ -443,10 +425,6 @@
 
                 // Screen scroll
                 if (player.y < canvas.height / 4) {
-                    // player.y += Math.abs(player.velY);
-                    // platforms.forEach(platform => {
-                    //     platform.y += Math.abs(player.velY);
-                    //     let highestPlatformY = getHighestPlatformY();
                     const scrollDistance = Math.abs(player.velY);
                     player.y += scrollDistance;
                     platforms.forEach(platform => {
@@ -479,12 +457,8 @@
                             platform.number = counter++; // Assign platform number
                             platform.timeOnPlatform = 0; // Initialize time on platform
                             platform.continueFall = false; // Initialize continueFall property
-                            // platform.enemy = Math.random() < 0.05; // 5% chance of having an enemy
-                            platform.enemy = Math.random() < 0.5; // 50% chance of having an enemy for testing
-                            // platform.isMoving = Math.random() < 0.06; // 6% chance of the platform moving up and down
-                            // platform.isMoving = Math.random() < 0.6; // 60% chance of the platform moving up and down for testing
-                            //platform.star = Math.random() < 0.1; // 10% chance of having a star
-                            platform.star = Math.random() < 0.5; // 50% chance of having a star for testing
+                            platform.enemy = Math.random() < 0.05; // 5% chance of having an enemy
+                            platform.star = Math.random() < 0.1; // 10% chance of having a star
 
                             // Reset direction and originalY for regenerated platforms
                             platform.direction = platform.isMoving ? 1 : undefined;
@@ -512,16 +486,12 @@
                     });
                     stars.forEach((star, index) => {
                         if (star.y + player.height > canvas.height) {
-                            stars.splice(index, 1); // Remove the star at the current index
+                            if (!star.active) {
+                                stars.splice(index, 1); // Remove the star at the current index
+                            }
                             return; // Exit the loop after removing the star
                         }
                     });
-                    // enemies = enemies.filter(enemy => {
-                    //     return enemy.y > canvas.height; // Keep enemies whose y-coordinate is not greater than canvas height
-                    // });
-                    // enemies.forEach(enemy => {
-                    //     enemy.y += Math.abs(player.velY);
-                    // });
                 }
 
                 // Collision with the canvas edges
@@ -575,9 +545,6 @@
 
                             // If time exceeds 3 seconds, make platform fall
                             if (platform.timeOnPlatform > 3) {
-                                // platform.velY = gravity; // Add velocity to make it fall
-                                // platform.y += platform.velY; // Move platform based on velocity
-                                // platform.y += gravity * 10; // Move platform based on gravity
                                 platform.continueFall = true; // Set continueFall property to true
                             }
                         } else {
@@ -588,50 +555,6 @@
 
                     if (onPlatform) break;
                 }
-
-                // platforms.forEach(platform => {
-                //     if (
-                //         player.x < platform.x + platform.width &&
-                //         player.x + player.width > platform.x &&
-                //         player.y + player.height > platform.y &&
-                //         player.y + player.height < platform.y + platform.height &&
-                //         player.velY >= 0
-                //     ) {
-                //         if (platform.isMoving && platform.direction === 1) {
-                //             player.jumping = false;
-                //             player.velY = 0;
-                //             player.y = platform.y - player.height + gravity * 1.5;
-                //         } else if (platform.isMoving && platform.direction === -1) {
-                //             player.jumping = false;
-                //             player.velY = 0;
-                //             player.y = platform.y - player.height - gravity * 1.5;
-                //         } else {
-                //             player.jumping = false;
-                //             player.velY = 0;
-                //             player.y = platform.y - player.height;
-                //         }
-
-                //         // Update score
-                //         if (platform.number > score) {
-                //             score = platform.number;
-                //         }
-
-                //         // Increment time on platform
-                //         platform.timeOnPlatform += 1 / 60; // Assuming the game runs at 60 frames per second
-
-                //         // If time exceeds 3 seconds, make platform fall
-                //         if (platform.timeOnPlatform > 3) {
-                //             // platform.velY = gravity; // Add velocity to make it fall
-                //             // platform.y += platform.velY; // Move platform based on velocity
-                //             // platform.y += gravity * 10; // Move platform based on gravity
-                //             platform.continueFall = true; // Set continueFall property to true
-                //         }
-                //     } else {
-                //         // Reset time on platform if player is not on it
-                //         platform.timeOnPlatform = 0;
-                //     }
-                // });
-
 
                 // Move platforms
                 platforms.forEach(platform => {
@@ -644,17 +567,6 @@
                         platform.y += gravity * 20; // Move platform based on gravity
                     }
                 });
-
-                // // Create enemies
-                // platforms.forEach(platform => {
-                //     if (platform.enemy) {
-                //         const enemyType = Math.random() < 0.5 ? Type1Enemy : Type2Enemy;
-                //         const enemyX = platform.x + (platform.width - player.width) / 2;
-                //         const enemyY = platform.y - player.height;
-                //         const enemy = new enemyType(enemyX, enemyY, player.width, player.height, platform);
-                //         enemies.push(enemy);
-                //     }
-                // });
 
                 // Draw and update enemies
                 enemies.forEach(enemy => {
@@ -706,52 +618,12 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw background
-            // loadBackground();
-
             // Draw score
             ctx.font = "16px Sprint";
             ctx.fillStyle = "black";
             ctx.fillText(`Score: ${score}`, 10, 20);
 
-            // // Draw player
-            // // ctx.fillStyle = 'red';
-            // // ctx.fillRect(player.x, player.y, player.width, player.height);
-            // ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
-
-            // // Draw platforms
-            // platforms.forEach(platform => {
-            //     // ctx.fillStyle = 'black';
-            //     // ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            //     ctx.drawImage(platform.image, platform.x, platform.y, platform.width, platform.height);
-            //     if (platform.number % 10 === 0) {
-            //         ctx.fillStyle = 'white';
-            //         const rectWidth = 40;
-            //         const rectX = platform.x + (platform.width - rectWidth) / 2; // Position the rectangle at the center of the platform
-            //         ctx.fillRect(rectX, platform.y + platform.height, rectWidth, 15); // Draw rectangle touching the platform
-
-            //         ctx.fillStyle = 'green';
-            //         ctx.font = '12px Sprint';
-            //         ctx.textAlign = 'center'; // Set text alignment to center
-            //         ctx.fillText(platform.number, rectX + rectWidth / 2, platform.y + platform.height + 12); // Draw centered number
-            //     }
-            // });
-            // enemies.forEach(enemy => {
-            //     enemy.draw();
-            //     // if (enemy instanceof Type2Enemy) {
-            //     //     enemy.update();
-            //     // }
-            // });
-            // // Draw stars
-            // stars.forEach(star => {
-            //     if (!star.active && !star.collected) {
-            //         star.draw();
-            //     }
-            // });
             if (!gameOver) {
-                // Draw player
-                // ctx.fillStyle = 'red';
-                // ctx.fillRect(player.x, player.y, player.width, player.height);
                 if (stars.some(star => star.active)) {
                     ctx.drawImage(playerStarImg, player.x, player.y, player.width, player.height);
                 } else {
@@ -759,8 +631,6 @@
                 }
                 // Draw platforms
                 platforms.forEach(platform => {
-                    // ctx.fillStyle = 'black';
-                    // ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
                     ctx.drawImage(platform.image, platform.x, platform.y, platform.width, platform.height);
                     if (platform.number % 10 === 0) {
                         ctx.fillStyle = 'white';
@@ -776,9 +646,6 @@
                 });
                 enemies.forEach(enemy => {
                     enemy.draw();
-                    // if (enemy instanceof Type2Enemy) {
-                    //     enemy.update();
-                    // }
                 });
                 // Draw stars
                 stars.forEach(star => {
@@ -798,9 +665,6 @@
             requestAnimationFrame(updateGame);
         }
 
-        // if (numImagesLoaded === 4) {
-        //     updateGame();
-        // }
         updateGame();
     </script>
     <script type='text/javascript'>
